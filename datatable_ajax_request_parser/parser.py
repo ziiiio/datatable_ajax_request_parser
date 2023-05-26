@@ -64,9 +64,6 @@ def parse_datatable_raw_request_query(raw_request: str, as_dt_request=True):
     if not as_dt_request:
         return parsed_dict
 
-    import json
-    print(json.dumps(parsed_dict))
-
     data_dict = {
         'draw': int(parsed_dict.get('draw', None)),
         'start': int(parsed_dict.get('start', None)),

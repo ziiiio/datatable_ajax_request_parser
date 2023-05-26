@@ -74,12 +74,12 @@ class ParserTestCase(TestCase):
                                         'searchable': True}],
                            'draw': 1,
                            'length': 10,
-                           'orders': [{'column': '0', 'direction': 'asc', 'index': '0'}],
+                           'order': [{'column': 0, 'direction': 'asc', 'index': 0}],
                            'search_regex': False,
                            'search_value': '',
                            'start': 0}
 
-        answer = parse_datatable_raw_request_query(self.sample_datatable_ajax_request)
+        answer = parse_datatable_raw_request_query(self.sample_datatable_ajax_request, True)
 
         self.assertEqual(expected_answer, answer.to_dict())
 
@@ -114,12 +114,12 @@ class ParserTestCase(TestCase):
         expected_answer = DTRequest(**{'columns': columns,
                                        'draw': 1,
                                        'length': 10,
-                                       'orders': [DTOrder(**{'column': '0', 'direction': 'asc', 'index': '0'})],
+                                       'order': [DTOrder(**{'column': 0, 'direction': 'asc', 'index': 0})],
                                        'search_regex': False,
                                        'search_value': '',
                                        'start': 0})
 
-        answer = parse_datatable_raw_request_query(self.sample_datatable_ajax_request)
+        answer = parse_datatable_raw_request_query(self.sample_datatable_ajax_request, True)
 
         self.assertEqual(expected_answer, answer)
 

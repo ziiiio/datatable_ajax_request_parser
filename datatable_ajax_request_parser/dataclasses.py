@@ -1,15 +1,11 @@
 from dataclasses import asdict, dataclass
+from typing import List
 
 
 @dataclass
 class DictHelperMixin:
     def to_dict(self):
-        self_dict = asdict(self)
-        for key, value in self_dict.items():
-            if isinstance(value, DictHelperMixin):
-                self_dict[key] = value.to_dict()
-
-        return self_dict
+        return asdict(self)
 
 
 @dataclass
@@ -42,5 +38,5 @@ class DTRequest(DictHelperMixin):
     length: int
     search_value: str
     search_regex: bool
-    columns: DTColumn
-    orders: DTOrder
+    columns: List[DTColumn]
+    order: List[DTOrder]

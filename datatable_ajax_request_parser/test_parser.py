@@ -5,7 +5,7 @@ from .dataclasses import DTColumn, DTOrder
 from .parser import DTRequest, parse_datatable_raw_request_query
 
 
-class DatatablesTestCase(TestCase):
+class ParserTestCase(TestCase):
 
     def setUp(self):
         self.sample_datatable_ajax_request = 'http://somedomain/?draw=1&columns%5B0%5D%5Bdata%5D=hostname&columns' \

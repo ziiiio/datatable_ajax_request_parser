@@ -40,13 +40,11 @@ def get_orders(order_dictionary):
 
 def parse_datatable_raw_request_query(raw_request: str, as_dt_request=True):
     parse_result = urlparse(raw_request)
-    print(parse_result.query)
     datatable_query = parse_qs(parse_result.query, keep_blank_values=True)
 
     parsed_dict: dict[str, str | list[str] | dict] = {}
 
     for key, value in datatable_query.items():
-        print(key, value)
         key_list = key.replace('][', ';').replace('[', ';').replace(']', '').split(';')
 
         if len(key_list) == 0:

@@ -1,13 +1,11 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 
-from django.db.models import Q
+from django.db.models import Q, Model, QuerySet
 
-from datatable_ajax_request_parser.dataclasses import DTRequest
+from datatable_ajax_request_parser.dataclasses import DTRequest, DTResponse
 from datatable_ajax_request_parser.parser import add_typings_to_dict, parse_datatable_raw_request_query
 
-
-def get_django_datatable_query(raw_request: str = None):
-    return DjangoDTRequest(raw_request=raw_request)
+from typing import Callable, Type
 
 
 @dataclass
@@ -78,3 +76,46 @@ class DjangoDTRequest(DTRequest):
             final_query |= _filter
 
         return final_query
+
+
+@dataclass
+class DjangoDTResponse(DTResponse):
+
+    def convert_to_dt_response_dict(self):
+        return {
+            "data": self.data,
+            "recordsTotal": self.records_total,
+            "recordsFiltered": self.records_filtered,
+            "draw": self.draw,
+            "error": self.error
+        }
+
+
+def get_django_datatable_query(raw_request: str = None) -> DjangoDTRequest:
+    return DjangoDTRequest(raw_request=raw_request)
+
+
+def get_django_dt_response(parsed_dt_query: DjangoDTRequest,
+                           model_class: Type[Model],
+                           data_function: Callable[[QuerySet], DTResponse],
+                           error: str = None) -> DjangoDTResponse:
+    draw = parsed_dt_query.draw
+    offset = parsed_dt_query.start
+    limit = parsed_dt_query.length
+    order_by = parsed_dt_query.get_order_by()
+    search = parsed_dt_query.get_db_query_filter()
+
+    query_set = model_class.objects.filter(search).order_by(*order_by)
+
+    query_set_count = query_set.count()
+
+    filtered_set = query_set[offset:offset + limit]
+
+    result = {
+        "data": data_function(filtered_set),
+        "records_total": query_set_count,
+        "records_filtered": query_set_count,
+        "draw": draw,
+        "error": error
+    }
+    return DjangoDTResponse(**result)

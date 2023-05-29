@@ -1,8 +1,13 @@
 from django.db.models import Q
 from django.test import TestCase
 
-from datatable_ajax_request_parser.django_extension import DjangoDTRequest, get_django_datatable_query
+from datatable_ajax_request_parser.django_extension import (
+    DjangoDTRequest, get_django_datatable_query,
+    get_django_dt_response
+)
 from datatable_ajax_request_parser.utils import assert_q_equal
+
+from unittest import mock
 
 
 class DjangoAjaxRequestTestCase(TestCase):
@@ -60,22 +65,48 @@ class DjangoAjaxRequestTestCase(TestCase):
 
         result = parsed_request.get_db_query_filter()
 
-        # (OR: ('hostname__icontains', 'jjj'),
-        # ('hostname__iregex', 'abc'),
-        # ('ip_address__icontains', 'jjj'),
-        # ('username__icontains', 'jjj'),
-        # ('username__iregex', '1234'),
-        # ('type__icontains', 'jjj'),
-        # ('type__icontains', 'hshs'))
-
         expected_result = Q(hostname__icontains='jjj') | \
-            Q(hostname__iregex='abc') | \
-            Q(ip_address__icontains='jjj') | \
-            Q(username__icontains='jjj') | \
-            Q(username__iregex='1234') | \
-            Q(type__icontains='jjj') | \
-            Q(type__icontains='hshs')
+                          Q(hostname__iregex='abc') | \
+                          Q(ip_address__icontains='jjj') | \
+                          Q(username__icontains='jjj') | \
+                          Q(username__iregex='1234') | \
+                          Q(type__icontains='jjj') | \
+                          Q(type__icontains='hshs')
 
         assert_q_equal(result, expected_result)
 
+    def test_get_dt_response(self):
+        parsed_request = get_django_datatable_query(self.sample_datatable_ajax_request)
 
+        count_result = 12
+        filter_result = [1, 2, 3, 4, 5]
+        error = 'some error'
+
+        count_mock = mock.MagicMock()
+        count_mock.__getitem__.return_value = filter_result
+        count_mock.count.return_value = count_result
+
+        order_mock = mock.Mock()
+        order_mock.order_by.return_value = count_mock
+
+        filter_mock = mock.Mock()
+        filter_mock.filter.return_value = order_mock
+
+        model_class_mock = mock.Mock()
+        model_class_mock.objects = filter_mock
+
+        result = get_django_dt_response(parsed_request, model_class_mock, lambda x: x, error)
+
+        results_transformed = result.convert_to_dt_response_dict()
+
+        expected_result = {
+            'data': filter_result,
+            'recordsTotal': count_result,
+            'recordsFiltered': count_result,
+            'draw': parsed_request.draw,
+            'error': error
+        }
+
+        self.assertEqual(expected_result, results_transformed)
+        filter_mock.filter.assert_called_with(parsed_request.get_db_query_filter())
+        order_mock.order_by.assert_called_with(*parsed_request.get_order_by())

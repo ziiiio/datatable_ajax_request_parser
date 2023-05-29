@@ -40,3 +40,12 @@ class DTRequest(DictHelperMixin):
     search_regex: bool
     columns: List[DTColumn]
     order: List[DTOrder]
+
+
+@dataclass
+class DTResponse(DictHelperMixin):
+    draw: int
+    records_total: int
+    records_filtered: int
+    data: dict
+    error: str

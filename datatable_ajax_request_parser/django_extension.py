@@ -45,35 +45,33 @@ class DjangoDTRequest(DTRequest):
 
         return order_list
 
-    def get_db_query_filter(self, mapping_dict: dict = None):
+    def get_db_query_filter(self, return_as_list_of_dicts: bool = False):
         filters = []
 
         for column in self.columns:
-            query_filter = Q()
-
-            if not column.searchable or (mapping_dict and column.data not in mapping_dict):
+            if not column.searchable:
                 continue
 
             col_name = column.data
 
             if self.search_regex:
-                query_filter |= Q(**{col_name + '__iregex': fr"{self.search_value}"})
+                filters.append({col_name + '__iregex': fr"{self.search_value}"})
             elif self.search_value:
-                query_filter |= Q(**{col_name + '__icontains': self.search_value})
+                filters.append({col_name + '__icontains': self.search_value})
 
             if not column.search_value:
-                filters.append(query_filter)
                 continue
 
             column_key = col_name + '__iregex' if column.search_is_regex else col_name + '__icontains'
 
-            query_filter |= Q(**{column_key: column.search_value})
+            filters.append({column_key: column.search_value})
 
-            filters.append(query_filter)
+        if return_as_list_of_dicts:
+            return filters
 
         final_query = Q()
         for _filter in filters:
-            final_query |= _filter
+            final_query |= Q(**_filter)
 
         return final_query
 

@@ -75,6 +75,38 @@ class DjangoAjaxRequestTestCase(TestCase):
 
         assert_q_equal(result, expected_result)
 
+    def test_query_filter_get_dicts(self):
+        parsed_request = {
+            'draw': '1',
+            'columns': {
+                '0': {'data': 'hostname', 'name': '', 'searchable': 'true', 'orderable': 'true',
+                      'search': {'value': 'abc', 'regex': 'true'}},
+                '1': {'data': 'ip_address', 'name': '', 'searchable': 'true', 'orderable': 'true',
+                      'search': {'value': '', 'regex': 'false'}},
+                '2': {'data': 'username', 'name': '', 'searchable': 'true', 'orderable': 'true',
+                      'search': {'value': '1234', 'regex': 'true'}},
+                '3': {'data': 'type', 'name': '', 'searchable': 'true', 'orderable': 'true',
+                      'search': {'value': 'hshs', 'regex': 'false'}}
+            },
+            'order': {'0': {'column': '0', 'dir': 'asc'}},
+            'start': '0', 'length': '10',
+            'search': {'value': 'jjj', 'regex': 'false'},
+            '_': '1672804547475'
+        }
+
+        parsed_request = DjangoDTRequest(parsed_dict=parsed_request)
+
+        result = parsed_request.get_db_query_filter(return_as_list_of_dicts=True)
+
+        expected_result = [
+            {'hostname__icontains': 'jjj'}, {'hostname__iregex': 'abc'}, {'ip_address__icontains': 'jjj'},
+            {'username__icontains': 'jjj'}, {'username__iregex': '1234'}, {'type__icontains': 'jjj'},
+            {'type__icontains': 'hshs'}
+        ]
+
+        self.assertEqual(result, expected_result)
+
+
     def test_get_dt_response(self):
         parsed_request = get_django_datatable_query(self.sample_datatable_ajax_request)
 

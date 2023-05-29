@@ -15,13 +15,14 @@ with open(path.join(HERE, 'README.md'), encoding='utf-8') as f:
 
 # This call to setup() does all the work
 setup(
-    name="datatable_ajax_request_parser",
-    version="1.0.1",
+    name="datatable-ajax-request-parser",
+    version="1.0.2",
     description="Helper function to parse ajax datatable request into usable dictionary",
     long_description=long_description,
     long_description_content_type="text/markdown",
     author="Yap ZhiHon",
     author_email="y.zhihon@gmail.com",
+    url="https://github.com/ziiiio/datatable_ajax_request_parser.git",
     classifiers=[
         "Operating System :: OS Independent"
     ],

@@ -4,7 +4,7 @@ This is a small package to help with parsing datatable requests
 
 
 ## Installation
-simply do a `pip install datatable_ajax_request_parser`
+simply do a `pip install datatable-ajax-request-parser`
 
 
 ## How to use

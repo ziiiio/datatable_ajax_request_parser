@@ -25,7 +25,7 @@ class DjangoDTRequest(DTRequest):
 
     # pass mapping dict in if you are not ordering based on the model
     # example: annotations, aggregations
-    def get_order_by(self, mapping_dict: dict = None):
+    def get_order_by(self):
         order_list = []
 
         for order in self.order:
@@ -35,8 +35,6 @@ class DjangoDTRequest(DTRequest):
                 continue
 
             db_column = self.columns[order_index].data
-            if mapping_dict and mapping_dict.get(db_column):
-                db_column = mapping_dict.get(db_column)
 
             if order.direction == 'desc':
                 db_column = '-' + db_column
@@ -103,15 +101,15 @@ def get_django_dt_response(parsed_dt_query: DjangoDTRequest,
     order_by = parsed_dt_query.get_order_by()
     search = parsed_dt_query.get_db_query_filter()
 
+    total_count = model_class.objects.count()
     query_set = model_class.objects.filter(search).order_by(*order_by)
-
     query_set_count = query_set.count()
 
     filtered_set = query_set[offset:offset + limit]
 
     result = {
         "data": data_function(filtered_set),
-        "records_total": query_set_count,
+        "records_total": total_count,
         "records_filtered": query_set_count,
         "draw": draw,
         "error": error

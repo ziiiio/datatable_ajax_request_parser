@@ -28,6 +28,24 @@ class DjangoAjaxRequestTestCase(TestCase):
                                              '5D=false&order%5B0%5D%5Bcolumn%5D=0&order%5B0%5D%5Bdir%5D=asc&start' \
                                              '=0&length=10&search%5Bvalue%5D=&search%5Bregex%5D=false&_=1672804547475'
 
+        self.parsed_request = {
+            'draw': '1',
+            'columns': {
+                '0': {'data': 'hostname', 'name': '', 'searchable': 'true', 'orderable': 'true',
+                      'search': {'value': 'abc', 'regex': 'true'}},
+                '1': {'data': 'ip_address', 'name': '', 'searchable': 'true', 'orderable': 'true',
+                      'search': {'value': '', 'regex': 'false'}},
+                '2': {'data': 'username', 'name': '', 'searchable': 'true', 'orderable': 'true',
+                      'search': {'value': '1234', 'regex': 'true'}},
+                '3': {'data': 'type', 'name': '', 'searchable': 'true', 'orderable': 'true',
+                      'search': {'value': 'hshs', 'regex': 'false'}}
+            },
+            'order': {'0': {'column': '0', 'dir': 'asc'}},
+            'start': '0', 'length': '10',
+            'search': {'value': 'jjj', 'regex': 'false'},
+            '_': '1672804547475'
+        }
+
     def test_get_order_by(self):
         parsed_request = get_django_datatable_query(self.sample_datatable_ajax_request)
 
@@ -43,25 +61,7 @@ class DjangoAjaxRequestTestCase(TestCase):
 
     # @skip("Test will fail, but the function should return the expected result")
     def test_query_filter(self):
-        parsed_request = {
-            'draw': '1',
-            'columns': {
-                '0': {'data': 'hostname', 'name': '', 'searchable': 'true', 'orderable': 'true',
-                      'search': {'value': 'abc', 'regex': 'true'}},
-                '1': {'data': 'ip_address', 'name': '', 'searchable': 'true', 'orderable': 'true',
-                      'search': {'value': '', 'regex': 'false'}},
-                '2': {'data': 'username', 'name': '', 'searchable': 'true', 'orderable': 'true',
-                      'search': {'value': '1234', 'regex': 'true'}},
-                '3': {'data': 'type', 'name': '', 'searchable': 'true', 'orderable': 'true',
-                      'search': {'value': 'hshs', 'regex': 'false'}}
-            },
-            'order': {'0': {'column': '0', 'dir': 'asc'}},
-            'start': '0', 'length': '10',
-            'search': {'value': 'jjj', 'regex': 'false'},
-            '_': '1672804547475'
-        }
-
-        parsed_request = DjangoDTRequest(parsed_dict=parsed_request)
+        parsed_request = DjangoDTRequest(parsed_dict=self.parsed_request)
 
         result = parsed_request.get_db_query_filter()
 
@@ -76,25 +76,7 @@ class DjangoAjaxRequestTestCase(TestCase):
         assert_q_equal(result, expected_result)
 
     def test_query_filter_get_dicts(self):
-        parsed_request = {
-            'draw': '1',
-            'columns': {
-                '0': {'data': 'hostname', 'name': '', 'searchable': 'true', 'orderable': 'true',
-                      'search': {'value': 'abc', 'regex': 'true'}},
-                '1': {'data': 'ip_address', 'name': '', 'searchable': 'true', 'orderable': 'true',
-                      'search': {'value': '', 'regex': 'false'}},
-                '2': {'data': 'username', 'name': '', 'searchable': 'true', 'orderable': 'true',
-                      'search': {'value': '1234', 'regex': 'true'}},
-                '3': {'data': 'type', 'name': '', 'searchable': 'true', 'orderable': 'true',
-                      'search': {'value': 'hshs', 'regex': 'false'}}
-            },
-            'order': {'0': {'column': '0', 'dir': 'asc'}},
-            'start': '0', 'length': '10',
-            'search': {'value': 'jjj', 'regex': 'false'},
-            '_': '1672804547475'
-        }
-
-        parsed_request = DjangoDTRequest(parsed_dict=parsed_request)
+        parsed_request = DjangoDTRequest(parsed_dict=self.parsed_request)
 
         result = parsed_request.get_db_query_filter(return_as_list_of_dicts=True)
 
@@ -111,6 +93,7 @@ class DjangoAjaxRequestTestCase(TestCase):
         parsed_request = get_django_datatable_query(self.sample_datatable_ajax_request)
 
         count_result = 12
+        total_result = 120
         filter_result = [1, 2, 3, 4, 5]
         error = 'some error'
 
@@ -121,11 +104,12 @@ class DjangoAjaxRequestTestCase(TestCase):
         order_mock = mock.Mock()
         order_mock.order_by.return_value = count_mock
 
-        filter_mock = mock.Mock()
-        filter_mock.filter.return_value = order_mock
+        filter_count_mock = mock.Mock()
+        filter_count_mock.filter.return_value = order_mock
+        filter_count_mock.count.return_value = total_result
 
         model_class_mock = mock.Mock()
-        model_class_mock.objects = filter_mock
+        model_class_mock.objects = filter_count_mock
 
         result = get_django_dt_response(parsed_request, model_class_mock, lambda x: x, error)
 
@@ -133,12 +117,12 @@ class DjangoAjaxRequestTestCase(TestCase):
 
         expected_result = {
             'data': filter_result,
-            'recordsTotal': count_result,
+            'recordsTotal': total_result,
             'recordsFiltered': count_result,
             'draw': parsed_request.draw,
             'error': error
         }
 
         self.assertEqual(expected_result, results_transformed)
-        filter_mock.filter.assert_called_with(parsed_request.get_db_query_filter())
+        filter_count_mock.filter.assert_called_with(parsed_request.get_db_query_filter())
         order_mock.order_by.assert_called_with(*parsed_request.get_order_by())

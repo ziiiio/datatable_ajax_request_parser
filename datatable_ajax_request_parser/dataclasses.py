@@ -41,6 +41,12 @@ class DTRequest(DictHelperMixin):
     columns: List[DTColumn]
     order: List[DTOrder]
 
+    def get_page_number(self) -> int:
+        return (self.start // self.length) + 1
+
+    def get_page_size(self) -> int:
+        return self.length
+
 
 @dataclass
 class DTResponse(DictHelperMixin):

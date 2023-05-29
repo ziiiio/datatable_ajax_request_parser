@@ -99,6 +99,20 @@ from datatable_ajax_request_parser.django_extension import DjangoDTRequest
 DjangoDTRequest(parsed_dict=parsed_request)
 ```
 
+If you need a response, there is a `DjangoDTResponse` helper class available to help parse into datatable-compliant format
+
+```python
+from datatable_ajax_request_parser.django_extension get_django_dt_response
+
+parsed_query = get_django_datatable_query(sample_url)
+get_django_dt_response(parsed_query, <your model class>, <your function to process the data>, <your error>)
+
+```
+
+
 ## Footnote
 
 Feel free to submit any PRs for improvements
+
+## Credits
+I did not write everything by myself, I thank Lim Yong Soon for providing much of the useful code.

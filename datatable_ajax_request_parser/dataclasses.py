@@ -1,5 +1,5 @@
 from dataclasses import asdict, dataclass
-from typing import List
+from typing import Any, List
 
 
 @dataclass
@@ -53,5 +53,5 @@ class DTResponse(DictHelperMixin):
     draw: int
     records_total: int
     records_filtered: int
-    data: dict
+    data: List[Any]
     error: str

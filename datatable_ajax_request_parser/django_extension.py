@@ -1,11 +1,10 @@
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
+from typing import Callable, Type
 
-from django.db.models import Q, Model, QuerySet
+from django.db.models import Model, Q, QuerySet
 
 from datatable_ajax_request_parser.dataclasses import DTRequest, DTResponse
 from datatable_ajax_request_parser.parser import add_typings_to_dict, parse_datatable_raw_request_query
-
-from typing import Callable, Type
 
 
 @dataclass
